@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.8.0 )
 
-project( example_load_library )
+project( load_library_prj )
 
 include( ExternalProject )
 
@@ -63,8 +63,6 @@ target_link_libraries( load_library_static ${Boost_Libraries} )
 install( TARGETS load_library DESTINATION lib )
 install( TARGETS load_library_static DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/parse_template )
-install( DIRECTORY ${CMAKE_BINARY_DIR}/install/lib/ DESTINATION lib )
-install( DIRECTORY ${CMAKE_BINARY_DIR}/install/include/ DESTINATION include )
 
 add_executable( example_load_library example_load_library.cpp )
 add_test( example_load_library_test, example_load_library )
