@@ -19,7 +19,7 @@ elseif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" )
 endif( )
 
 ExternalProject_Add(
-	header_libraries
+	header_libraries_prj
 	GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
 	SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdparty/header_libraries"
 	GIT_TAG "master"
@@ -53,18 +53,21 @@ include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 link_directories( ${Boost_LIBRARY_DIRS} )
 
 add_library ( load_library SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+add_dependencies( load_library header_libraries_prj )
+target_link_libraries( load_library ${Boost_Libraries} )
+
 add_library ( load_library_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( load_library header_libraries )
-add_dependencies( load_library_static header_libraries )
+add_dependencies( load_library_static header_libraries_prj )
+target_link_libraries( load_library_static ${Boost_Libraries} )
 
 install( TARGETS load_library DESTINATION lib )
 install( TARGETS load_library_static DESTINATION lib )
+install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/parse_template )
+install( DIRECTORY ${CMAKE_BINARY_DIR}/install/lib/ DESTINATION lib )
+install( DIRECTORY ${CMAKE_BINARY_DIR}/install/include/ DESTINATION include )
 
 add_executable( example_load_library example_load_library.cpp )
-add_dependencies( example_load_library header_libraries )
-target_link_libraries( example_load_library load_library ${CMAKE_DL_LIBS} ${Boost_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 add_test( example_load_library_test, example_load_library )
+add_dependencies( example_load_library header_libraries_prj )
+target_link_libraries( example_load_library load_library ${CMAKE_DL_LIBS} ${Boost_LIBS} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
 
-foreach( CUR_PREFIX ${HEADER_FILES} )
-	install( FILES "${CUR_PREFIX}" DESTINATION include/daw/load_libary )
-endforeach( CUR_PREFIX )
