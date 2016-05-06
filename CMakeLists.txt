@@ -52,16 +52,11 @@ set( SOURCE_FILES
 include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
 link_directories( ${Boost_LIBRARY_DIRS} )
 
-add_library ( load_library SHARED ${HEADER_FILES} ${SOURCE_FILES} )
+add_library ( load_library STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( load_library header_libraries_prj )
 target_link_libraries( load_library ${Boost_Libraries} )
 
-add_library ( load_library_static STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( load_library_static header_libraries_prj )
-target_link_libraries( load_library_static ${Boost_Libraries} )
-
 install( TARGETS load_library DESTINATION lib )
-install( TARGETS load_library_static DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/parse_template )
 
 add_executable( example_load_library example_load_library.cpp )
