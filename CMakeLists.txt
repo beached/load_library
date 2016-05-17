@@ -52,7 +52,7 @@ link_directories( ${Boost_LIBRARY_DIRS} )
 
 add_library ( load_library STATIC ${HEADER_FILES} ${SOURCE_FILES} )
 add_dependencies( load_library header_libraries_prj )
-target_link_libraries( load_library ${Boost_Libraries} )
+target_link_libraries( load_library ${Boost_LIBRARIES} )
 
 install( TARGETS load_library DESTINATION lib )
 install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/parse_template )
