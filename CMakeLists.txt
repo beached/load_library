@@ -28,8 +28,6 @@ externalproject_add(
 	SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdparty/header_libraries"
 	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
 	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
-	PATCH_COMMAND ""
-	TEST_COMMAND ""
  )
 
 include_directories( SYSTEM "${CMAKE_BINARY_DIR}/install/include" )
