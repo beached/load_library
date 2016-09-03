@@ -25,8 +25,9 @@
 #include <codecvt>
 #include <locale>
 #include <string>
-#include <daw/daw_utility.h>
 #include <windows.h>
+
+#include <daw/daw_utility.h>
 
 namespace daw {
 	namespace system {
@@ -37,16 +38,16 @@ namespace daw {
 
 
 			template<typename ResultType, typename... ArgTypes>
-			daw::function_pointer_t<ResultType, ArgTypes...> get_function_address(const HINSTANCE& handle, std::string&& function_name) {
-				using function_ptr_t = daw::function_pointer_t<ResultType, ArgTypes...> ;
-				auto function_ptr = reinterpret_cast<function_ptr_t>(GetProcAddress(handle, function_name.c_str()));
-				if (!function_ptr) {
-					auto err = GetLastError();
-					std::string msg = "Could not load function in library err : " + err;
-					throw std::runtime_error( msg );
+				daw::function_pointer_t<ResultType, ArgTypes...> get_function_address(const HINSTANCE& handle, std::string&& function_name) {
+					using function_ptr_t = daw::function_pointer_t<ResultType, ArgTypes...> ;
+					auto function_ptr = reinterpret_cast<function_ptr_t>(GetProcAddress(handle, function_name.c_str()));
+					if (!function_ptr) {
+						auto err = GetLastError();
+						std::string msg = "Could not load function in library err : " + err;
+						throw std::runtime_error( msg );
+					}
+					return function_ptr;
 				}
-				return function_ptr;
-			}
 		} // namespace impl
 	}	// namespace system
 }	// namespace daw

@@ -24,105 +24,115 @@
 
 #include <functional>
 #include <cstdint>
+
 #include <daw/daw_exception.h>
 namespace daw {
 
 	template<typename T>
-	class ReferenceCountedValue final {
-		using counter_t = int64_t;
-		T* m_value;
-		counter_t* m_counter;
-		std::function<void( T* )> m_cleaner;
-	public:
-		
-		template<typename... Args>
-		ReferenceCountedValue( Args&&... args ) : m_value{ nullptr }, m_counter{ nullptr }, m_cleaner{ nullptr } {
-			m_value = new T( std::forward<Args&&>( args )... );
-			try {
-				m_counter = new counter_t( );
-				daw::exception::daw_throw_on_null( m_counter, "Unable to allocate value" );
-			} catch( ... ) {
-				if( m_value ) {
-					delete m_value;
-				}
-				throw;
-			}
-			*m_counter = 1;
-		}
+		class ReferenceCountedValue final {
+			using counter_t = int64_t;
 
-		explicit ReferenceCountedValue( T&& value ) : m_value{ new T( std::forward<T>( value ) ) }, m_counter{ new counter_t( ) }, m_cleaner{ nullptr } {			
-			daw::exception::daw_throw_on_null( m_counter, "Unable to allocate value" );
-			*m_counter = 1;
-		}
+			T * m_value;
+			counter_t * m_counter;
+			std::function<void( T* )> m_cleaner;
+			public:
 
-		ReferenceCountedValue( ReferenceCountedValue const & other ) : m_value{ other.m_value }, m_counter{ other.m_counter }, m_cleaner{ other.m_cleaner } {
-			++(*other.m_counter);
-		}
+			template<typename... Args>
+				ReferenceCountedValue( Args&&... args ): 
+					m_value{ nullptr }, 
+				m_counter{ nullptr }, 
+				m_cleaner{ nullptr } {
 
-		ReferenceCountedValue& operator=(ReferenceCountedValue const & rhs) {
-			if( this != &rhs ) {
-				m_value = rhs.m_value;
-				m_counter = rhs.m_counter;
-				++(*rhs.m_counter);
-				m_cleaner = rhs.m_cleaner;
-			}
-			return *this;
-		}
-
-		ReferenceCountedValue( ReferenceCountedValue && other ) : m_value{ std::move( other.m_value ) }, m_counter{ std::move( other.m_counter ) }, m_cleaner{ std::move( other.m_cleaner ) } {
-			++(*other.m_counter);
-		}
-
-		ReferenceCountedValue& operator=( ReferenceCountedValue && rhs) {
-			if( this != &rhs ) {
-				m_value = std::move( rhs.m_value );
-				m_counter = std::move( rhs.m_counter );
-				++(*rhs.m_counter);
-				m_cleaner = std::move( rhs.m_cleaner );
-			}
-			return *this;
-		}
-
-
-		void set_cleaner( std::function<void( T* )> cleaner ) {
-			m_cleaner = cleaner;
-		}
-
-		void clear_cleaner( ) {
-			m_cleaner = std::function<void( T* )>( nullptr );
-		}
-
-		T& operator()( ) {
-			return *m_value;
-		}
-
-		const T& operator()( ) const { 
-			return *m_value;
-		}
-
-		counter_t count( ) const {
-			return *m_counter;
-		}
-
-		bool empty( ) const {
-			return !m_value && *m_counter <= 1;
-		}
- 
-		~ReferenceCountedValue( ) {
-			if( m_value ) {
-				if( *m_counter <= 1 ) {
-					*m_counter = 0;
-					if( m_cleaner ) {
-						m_cleaner( m_value );
+					m_value = new T( std::forward<Args&&>( args )... );
+					try {
+						m_counter = new counter_t( );
+						daw::exception::daw_throw_on_null( m_counter, "Unable to allocate value" );
+					} catch( ... ) {
+						if( m_value ) {
+							delete m_value;
+						}
+						throw;
 					}
-					delete m_value;
-					m_value = nullptr;
-				} else {
-					--(*m_counter);
+					*m_counter = 1;
+				}
+
+			explicit ReferenceCountedValue( T&& value ) :
+				m_value{ new T( std::forward<T>( value ) ) },
+				m_counter{ new counter_t( ) },
+				m_cleaner{ nullptr } {			
+
+					daw::exception::daw_throw_on_null( m_counter, "Unable to allocate value" );
+					*m_counter = 1;
+				}
+
+			ReferenceCountedValue( ReferenceCountedValue const & other ) : m_value{ other.m_value }, m_counter{ other.m_counter }, m_cleaner{ other.m_cleaner } {
+				++(*other.m_counter);
+			}
+
+			ReferenceCountedValue& operator=(ReferenceCountedValue const & rhs) {
+				if( this != &rhs ) {
+					m_value = rhs.m_value;
+					m_counter = rhs.m_counter;
+					++(*rhs.m_counter);
+					m_cleaner = rhs.m_cleaner;
+				}
+				return *this;
+			}
+
+			ReferenceCountedValue( ReferenceCountedValue && other ) : m_value{ std::move( other.m_value ) }, m_counter{ std::move( other.m_counter ) }, m_cleaner{ std::move( other.m_cleaner ) } {
+				++(*other.m_counter);
+			}
+
+			ReferenceCountedValue& operator=( ReferenceCountedValue && rhs) {
+				if( this != &rhs ) {
+					m_value = std::move( rhs.m_value );
+					m_counter = std::move( rhs.m_counter );
+					++(*rhs.m_counter);
+					m_cleaner = std::move( rhs.m_cleaner );
+				}
+				return *this;
+			}
+
+
+			void set_cleaner( std::function<void( T* )> cleaner ) {
+				m_cleaner = cleaner;
+			}
+
+			void clear_cleaner( ) {
+				m_cleaner = std::function<void( T* )>( nullptr );
+			}
+
+			T& operator()( ) {
+				return *m_value;
+			}
+
+			const T& operator()( ) const { 
+				return *m_value;
+			}
+
+			counter_t count( ) const {
+				return *m_counter;
+			}
+
+			bool empty( ) const {
+				return !m_value && *m_counter <= 1;
+			}
+
+			~ReferenceCountedValue( ) {
+				if( m_value ) {
+					if( *m_counter <= 1 ) {
+						*m_counter = 0;
+						if( m_cleaner ) {
+							m_cleaner( m_value );
+						}
+						delete m_value;
+						m_value = nullptr;
+					} else {
+						--(*m_counter);
+					}
 				}
 			}
-		}
 
-	};	// class ReferencedCountedValue
+		};	// class ReferencedCountedValue
 }	// namespace daw
 

@@ -4,9 +4,10 @@
 #include <memory>
 #include <sstream>
 
+#include <daw/daw_range_algorithm.h>
+
 #include "load_library.h"
 #include "plugin_base.h"
-#include <daw/daw_range_algorithm.h>
 
 using namespace daw::algorithm;
 
@@ -17,8 +18,8 @@ std::vector<boost::filesystem::path> get_files_in_folder( std::string folder, st
 
 	if( fs::exists( p ) && fs::is_directory( p ) ) {
 		std::copy_if( fs::directory_iterator( folder ), fs::directory_iterator( ), std::back_inserter( result ), [&extensions]( fs::path const & path ) {
-			return fs::is_regular_file( path ) && (extensions.empty( ) || contains( extensions, fs::extension( path ) ));
-		} );
+				return fs::is_regular_file( path ) && (extensions.empty( ) || contains( extensions, fs::extension( path ) ));
+				} );
 	}
 	return sort( result );
 }
@@ -26,9 +27,9 @@ std::vector<boost::filesystem::path> get_files_in_folder( std::string folder, st
 using plugin_t = std::pair <daw::system::LibraryHandle, std::unique_ptr<daw::nodepp::plugins::IPlugin>>;
 
 struct test {
-// 	int f() const volatile {
-// 		return 1 + 1;
-// 	}
+	// 	int f() const volatile {
+	// 		return 1 + 1;
+	// 	}
 	int blah;
 	test( int b ): blah( b ) { }
 
@@ -64,8 +65,8 @@ std::vector<plugin_t> load_libraries_in_folder( std::string plugin_folder ) {
 			// We are going to keep on going if we cannot load a plugin
 			std::stringstream ss;
 
-			ss <<"Error loading plugin: " <<filename <<" with error\n" <<ex.what( ) <<std::endl;
-			std::cerr <<ss.str( ) <<std::endl;
+			ss << "Error loading plugin: " << filename << " with error\n" << ex.what( ) << std::endl;
+			std::cerr << ss.str( ) << std::endl;
 		}
 	}
 
@@ -77,7 +78,7 @@ int main( int, char const ** ) {
 	auto libraries = load_libraries_in_folder( plugin_folder );
 	for( auto const & lib : libraries ) {
 		const auto& library = *lib.second;
-		std::cout <<"name: " <<library.name( ) <<" version: " <<library.version( ) <<std::endl;
+		std::cout << "name: " << library.name( ) << " version: " << library.version( ) << std::endl;
 	}
 
 	return EXIT_SUCCESS;

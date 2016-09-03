@@ -23,15 +23,15 @@
 #ifdef WIN32
 
 #include <codecvt>
+#include <cstdint>
 #include <locale>
 #include <sstream>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <windows.h>
 
 #include "load_library_windows.h"
-#include <cstdint>
-#include <utility>
 
 namespace daw {
 	namespace system {

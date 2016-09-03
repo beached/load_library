@@ -20,21 +20,21 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#include <iostream>
 
 #include "load_library.h"
-#include <iostream>
 
 int main( int, char** ) {
 
-	#ifdef _WIN32
+#ifdef _WIN32
 	char* strA = "this is a test";
 	char* strB = "is";
 
 	auto result = daw::system::call_dll_function<int>( "User32.dll", "MessageBoxA", (HWND)NULL, (LPCSTR)strA, (LPCSTR)strB, (UINT)0 );
-	#else
+#else
 	auto result = daw::system::call_dll_function<std::string>( "./cygtestlib.dll", "test", std::string{ "this is a test" } );
-	#endif
-	
+#endif
+
 	std::cout <<result <<std::endl;
 	return 0;
 }

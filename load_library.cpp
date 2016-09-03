@@ -28,18 +28,22 @@
 namespace daw {
 	namespace system {
 		namespace impl {
-			OSLibraryHandle::OSLibraryHandle(std::string library_path) : m_handle{ impl::load_library(std::move(library_path)) } { 
-				m_handle.set_cleaner( []( handle_t* handle ) {
-					close_library( *handle );
-				} );
-			}
+			OSLibraryHandle::OSLibraryHandle(std::string library_path):
+				m_handle{ impl::load_library(std::move(library_path)) } { 
 
-			OSLibraryHandle::OSLibraryHandle(std::wstring library_path) : m_handle{ impl::load_library(std::move(library_path)) } { 
-				m_handle.set_cleaner( []( handle_t* handle ) {
-					close_library( *handle );
-				} );
-			}
-			
+					m_handle.set_cleaner( []( handle_t* handle ) {
+							close_library( *handle );
+							} );
+				}
+
+			OSLibraryHandle::OSLibraryHandle(std::wstring library_path):
+				m_handle{ impl::load_library(std::move(library_path)) } { 
+
+					m_handle.set_cleaner( []( handle_t* handle ) {
+							close_library( *handle );
+							} );
+				}
+
 			OSLibraryHandle::handle_t& OSLibraryHandle::get( ) {
 				return m_handle( );
 			}
@@ -51,12 +55,12 @@ namespace daw {
 			OSLibraryHandle::~OSLibraryHandle( ) { }
 		} // namespace impl
 
-// 		LibraryHandle::LibraryHandle( LibraryHandle other ): m_handle( std::move( other.m_handle ) ) { }
-// 
-// 		LibraryHandle LibraryHandle::operator=(LibraryHandle rhs) {
-// 			m_handle = std::move( rhs.m_handle );
-// 			return *this;
-// 		}
+		// 		LibraryHandle::LibraryHandle( LibraryHandle other ): m_handle( std::move( other.m_handle ) ) { }
+		// 
+		// 		LibraryHandle LibraryHandle::operator=(LibraryHandle rhs) {
+		// 			m_handle = std::move( rhs.m_handle );
+		// 			return *this;
+		// 		}
 
 
 	}	// namespace system
