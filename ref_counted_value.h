@@ -29,110 +29,83 @@
 namespace daw {
 
 	template<typename T>
-		class ReferenceCountedValue final {
-			using counter_t = int64_t;
-
-			T * m_value;
-			counter_t * m_counter;
-			std::function<void( T* )> m_cleaner;
-			public:
-
+	class ReferenceCountedValue final {
+		using cleaner_t = std::function<void( T & )>;
+		struct data {
+			T value;
+			cleaner_t cleaner;
+			
 			template<typename... Args>
-				ReferenceCountedValue( Args&&... args ): 
-					m_value{ nullptr }, 
-				m_counter{ nullptr }, 
-				m_cleaner{ nullptr } {
+			data( Args&&... args ): 
+					value{ new T( std::forward<Args>( args )... ) }, 
+					cleaner{ } { }
 
-					m_value = new T( std::forward<Args&&>( args )... );
-					try {
-						m_counter = new counter_t( );
-						daw::exception::daw_throw_on_null( m_counter, "Unable to allocate value" );
-					} catch( ... ) {
-						if( m_value ) {
-							delete m_value;
-						}
-						throw;
-					}
-					*m_counter = 1;
-				}
-
-			explicit ReferenceCountedValue( T&& value ) :
-				m_value{ new T( std::forward<T>( value ) ) },
-				m_counter{ new counter_t( ) },
-				m_cleaner{ nullptr } {			
-
-					daw::exception::daw_throw_on_null( m_counter, "Unable to allocate value" );
-					*m_counter = 1;
-				}
-
-			ReferenceCountedValue( ReferenceCountedValue const & other ) : m_value{ other.m_value }, m_counter{ other.m_counter }, m_cleaner{ other.m_cleaner } {
-				++(*other.m_counter);
-			}
-
-			ReferenceCountedValue& operator=(ReferenceCountedValue const & rhs) {
-				if( this != &rhs ) {
-					m_value = rhs.m_value;
-					m_counter = rhs.m_counter;
-					++(*rhs.m_counter);
-					m_cleaner = rhs.m_cleaner;
-				}
-				return *this;
-			}
-
-			ReferenceCountedValue( ReferenceCountedValue && other ) : m_value{ std::move( other.m_value ) }, m_counter{ std::move( other.m_counter ) }, m_cleaner{ std::move( other.m_cleaner ) } {
-				++(*other.m_counter);
-			}
-
-			ReferenceCountedValue& operator=( ReferenceCountedValue && rhs) {
-				if( this != &rhs ) {
-					m_value = std::move( rhs.m_value );
-					m_counter = std::move( rhs.m_counter );
-					++(*rhs.m_counter);
-					m_cleaner = std::move( rhs.m_cleaner );
-				}
-				return *this;
-			}
-
-
-			void set_cleaner( std::function<void( T* )> cleaner ) {
-				m_cleaner = cleaner;
-			}
-
-			void clear_cleaner( ) {
-				m_cleaner = std::function<void( T* )>( nullptr );
-			}
-
-			T& operator()( ) {
-				return *m_value;
-			}
-
-			const T& operator()( ) const { 
-				return *m_value;
-			}
-
-			counter_t count( ) const {
-				return *m_counter;
-			}
-
-			bool empty( ) const {
-				return !m_value && *m_counter <= 1;
-			}
-
-			~ReferenceCountedValue( ) {
-				if( m_value ) {
-					if( *m_counter <= 1 ) {
-						*m_counter = 0;
-						if( m_cleaner ) {
-							m_cleaner( m_value );
-						}
-						delete m_value;
-						m_value = nullptr;
-					} else {
-						--(*m_counter);
+			~data( ) {
+				if( nullptr != value ) {
+					if( cleaner ) {
+						cleaner( value );
 					}
 				}
 			}
+		};	// data
+		std::shared_ptr<data> m_value;
+	public:
 
-		};	// class ReferencedCountedValue
+		template<typename... Args>
+		ReferenceCountedValue( Args&&... args ): 
+				m_value{ std::make_shared<data>( std::forward<Args>(args)...)  } { }
+
+		ReferenceCountedValue( ReferenceCountedValue const & other ): 
+				m_value{ other.m_value } { } 
+
+		friend void swap( ReferenceCountedValue & lhs, ReferenceCountedValue & rhs ) noexcept {
+			using std::swap;
+			swap( lhs.m_value, rhs.m_value );
+		}
+
+		ReferenceCountedValue& operator=(ReferenceCountedValue const & rhs) {
+			if( this != &rhs ) {
+				ReferenceCountedValue tmp{ rhs };
+				using std::swap;
+				swap( *this, rhs );
+			}
+			return *this;
+		}
+
+		ReferenceCountedValue( ReferenceCountedValue && other ) : 
+				m_value{ std::move( other.m_value ) } { }
+
+		ReferenceCountedValue& operator=( ReferenceCountedValue && rhs) {
+			if( this != &rhs ) {
+				ReferenceCountedValue tmp{ std::move( rhs ) };
+				using std::swap;
+				swap( *this, rhs );
+			}
+			return *this;
+		}
+
+		void set_cleaner( cleaner_t cleaner ) {
+			m_value->cleaner = cleaner;
+		}
+
+		void clear_cleaner( ) {
+			m_value->cleaner = cleaner_t{ }; 
+		}
+
+		T & operator( )( ) {
+			return m_value->value;
+		}
+
+		T const & operator( )( ) const { 
+			return m_value->value;
+		}
+
+		bool empty( ) const {
+			return !m_value;
+		}
+
+		~ReferenceCountedValue( ) = default; 
+
+		};	// ReferencedCountedValue
 }	// namespace daw
 
