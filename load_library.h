@@ -70,8 +70,8 @@ namespace daw {
 
 			template<typename StringType>
 				LibraryHandle( StringType library_path ) : m_handle{ impl::load_library( std::move( library_path ) ) } {
-					m_handle.set_cleaner( []( handle_t* handle ) {
-							impl::close_library( *handle );
+					m_handle.set_cleaner( []( handle_t & handle ) {
+							impl::close_library( handle );
 							} );
 				}
 

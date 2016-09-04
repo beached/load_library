@@ -31,16 +31,16 @@ namespace daw {
 			OSLibraryHandle::OSLibraryHandle(std::string library_path):
 				m_handle{ impl::load_library(std::move(library_path)) } { 
 
-					m_handle.set_cleaner( []( handle_t* handle ) {
-							close_library( *handle );
+					m_handle.set_cleaner( []( handle_t & handle ) {
+							close_library( handle );
 							} );
 				}
 
 			OSLibraryHandle::OSLibraryHandle(std::wstring library_path):
 				m_handle{ impl::load_library(std::move(library_path)) } { 
 
-					m_handle.set_cleaner( []( handle_t* handle ) {
-							close_library( *handle );
+					m_handle.set_cleaner( []( handle_t & handle ) {
+							close_library( handle );
 							} );
 				}
 
