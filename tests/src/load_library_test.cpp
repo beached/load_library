@@ -20,9 +20,33 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-
 #include <daw/system/load_library.h>
+
+#include <filesystem>
+#include <iostream>
+#include <optional>
+#include <string_view>
+
+#ifndef _WIN32
+std::optional<std::filesystem::path>
+find_library_file( std::string const &base_name,
+              std::string const &root_path = "." ) {
+	using namespace std::string_view_literals;
+	std::string const lib_name = "lib" + base_name;
+	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
+	for( std::filesystem::path const &file :
+	     std::filesystem::directory_iterator( root_path ) ) {
+		if( std::find( std::begin( extensions ),
+		               std::end( extensions ),
+		               file.extension( ) ) != std::end( extensions ) ) {
+			if( base_name == file.stem( ) or lib_name == file.stem( ) ) {
+				return file;
+			}
+		}
+	}
+	return { };
+}
+#endif
 
 int main( ) {
 
@@ -37,12 +61,13 @@ int main( ) {
 	                                                   (LPCSTR)strB,
 	                                                   (UINT)0 );
 #else
-	auto result = daw::system::call_dll_function<std::string>(
-	  "./cygtestlib.dll",
-	  "test",
-	  std::string{ "this is a test" } );
+	auto lib_name = find_library_file( "test_library" );
+	if( not lib_name ) {
+		std::cerr << "could not find library\n";
+		return 1;
+	}
+	auto result =
+	  daw::system::call_library_function<int>( *lib_name, "add", 5, 6 );
 #endif
-
 	std::cout << result << '\n';
-	return 0;
 }

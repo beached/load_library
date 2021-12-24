@@ -36,12 +36,11 @@ namespace daw::system::impl {
 	daw::function_pointer_t<ResultType, ArgTypes...>
 	get_function_address( void *handle, std::string const &function_name ) {
 		using function_ptr_t = daw::function_pointer_t<ResultType, ArgTypes...>;
-		dlerror( );
+		(void)dlerror( );
 		auto function_ptr = reinterpret_cast<function_ptr_t>(
 		  dlsym( handle, function_name.c_str( ) ) );
-		auto has_error = dlerror( );
-		if( has_error ) {
-			throw std::runtime_error( "Could not load class factory in library" );
+		if( char const *err = dlerror( ); not function_ptr or err ) {
+			throw std::runtime_error( err );
 		}
 		return function_ptr;
 	}

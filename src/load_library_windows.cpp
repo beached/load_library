@@ -31,6 +31,8 @@
 #include <utility>
 #include <windows.h>
 
+#include <daw/daw_move.h>
+
 #include "daw/system/load_library_windows.h"
 
 namespace daw::system::impl {
@@ -83,7 +85,7 @@ namespace daw::system::impl {
 	}
 
 	HINSTANCE load_library( std::string library_path ) {
-		return load_library( widen_string( std::move( library_path ) ) );
+		return load_library( widen_string( DAW_MOVE( library_path ) ) );
 	}
 
 	void close_library( HINSTANCE handle ) {

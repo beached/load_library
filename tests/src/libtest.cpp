@@ -20,32 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#pragma once
-
-#include <codecvt>
-#include <locale>
-#include <string>
+#ifdef _WIN32
 #include <windows.h>
+BOOL APIENTRY DllMain( HANDLE, DWORD, LPVOID ) {
+	return TRUE;
+}
 
-#include <daw/daw_utility.h>
+#define MAKEDLL extern "C" __declspec( dllexport )
+#else
+#define MAKEDLL extern "C" [[gnu::visibility( "default" )]]
+#endif
 
-namespace daw::system::impl {
-	HINSTANCE load_library( std::wstring const &library_path );
-	HINSTANCE load_library( std::string const &library_path );
-	void close_library( HINSTANCE handle );
-
-	template<typename ResultType, typename... ArgTypes>
-	daw::function_pointer_t<ResultType, ArgTypes...>
-	get_function_address( HINSTANCE const &handle,
-	                      std::string const &function_name ) {
-		using function_ptr_t = daw::function_pointer_t<ResultType, ArgTypes...>;
-		auto function_ptr = reinterpret_cast<function_ptr_t>(
-		  GetProcAddress( handle, function_name.c_str( ) ) );
-		if( not function_ptr ) {
-			auto err = GetLastError( );
-			std::string msg = "Could not load function in library err : " + err;
-			throw std::runtime_error( msg );
-		}
-		return function_ptr;
-	}
-} // namespace daw::system::impl
+MAKEDLL int add( int a, int b ) {
+	return a + b;
+}

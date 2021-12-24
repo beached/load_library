@@ -22,6 +22,8 @@
 
 #include "daw/system/load_library.h"
 
+#include <daw/daw_move.h>
+
 #include <memory>
 #include <string>
 
@@ -51,10 +53,10 @@ namespace daw::system::impl {
 
 namespace daw::system {
 	// 		LibraryHandle::LibraryHandle( LibraryHandle other ): m_handle(
-	// std::move( other.m_handle ) ) { }
+	// DAW_MOVE( other.m_handle ) ) { }
 	//
 	// 		LibraryHandle LibraryHandle::operator=(LibraryHandle rhs) {
-	// 			m_handle = std::move( rhs.m_handle );
+	// 			m_handle = DAW_MOVE( rhs.m_handle );
 	// 			return *this;
 	// 		}
 }
