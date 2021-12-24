@@ -1,66 +1,90 @@
-cmake_minimum_required( VERSION 2.8.12 )
+# Copyright (c) Darrell Wright
+#
+# Distributed under the Boost Software License, Version 1.0. (See accompanying
+# file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
+#
+# Official repository: https://github.com/beached/gumbo_pp
+#
 
-project( load_library_prj )
+cmake_minimum_required(VERSION 3.20)
 
-include( ExternalProject )
+project("daw-load-library"
+        VERSION "0.0.1"
+        HOMEPAGE_URL "https://github.com/beached/load_library"
+        LANGUAGES C CXX)
 
-find_package( Boost 1.58.0 COMPONENTS filesystem REQUIRED )
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "The C++ standard whose features are requested.")
 
-if( ${CMAKE_CXX_COMPILER_ID} STREQUAL 'MSVC' )
-	add_compile_options( -D_WIN32_WINNT=0x0601 ) 
-else( )
-	find_package( Threads REQUIRED )
-	if( THREADS_HAVE_PTHREAD_ARG )
-		set( COMPILER_SPECIFIC_LIBS, "-lpthread" )
-	endif( )
+option(DAW_USE_PACKAGE_MANAGEMENT "Do not use FetchPackage for dependencies" OFF)
+option(DAW_ENABLE_TESTING "Build tests and examples" OFF)
 
-	if( ${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" )
-		add_compile_options(-std=c++14 -Weverything -Wno-c++98-compat -Wno-covered-switch-default -Wno-padded -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-unused-parameter -Wno-missing-noreturn -Wno-missing-prototypes -Wno-disabled-macro-expansion)		
-	elseif( ${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU" )
-		add_compile_options(-std=c++14 -Wall -Wno-deprecated-declarations)
-	endif( )
-endif( )
+set(PROJECT_INCLUDE_DIR ${PROJECT_SOURCE_DIR}/include)
 
-externalproject_add(
-	header_libraries_prj
-	GIT_REPOSITORY "https://github.com/beached/header_libraries.git"
-	GIT_TAG "master"
-	SOURCE_DIR "${CMAKE_BINARY_DIR}/3rdparty/header_libraries"
-	INSTALL_DIR "${CMAKE_BINARY_DIR}/install"
-	CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_BINARY_DIR}/install
- )
+if (NOT DAW_USE_PACKAGE_MANAGEMENT)
+    add_subdirectory(extern)
+else ()
+    find_package(daw-header-libraries REQUIRED)
+endif ()
 
-include_directories( SYSTEM "${CMAKE_BINARY_DIR}/install/include" )
-link_directories( "${CMAKE_BINARY_DIR}/install/lib" )
+include(GNUInstallDirs)
 
-set( HEADER_FILES
-	load_library.h
-	load_library_posix.h
-	load_library_windows.h
-	load_plugin.h
-	plugin_base.h
-	ref_counted_value.h
+if (WIN32)
+    set(DAW_LIBRARY_DEFINITION_FILE src/load_library_windows.cpp)
+else ()
+    set(DAW_LIBRARY_DEFINITION_FILE src/load_library_posix.cpp)
+endif ()
+
+add_library(${PROJECT_NAME}
+        src/load_library.cpp
+        ${DAW_LIBRARY_DEFINITION_FILE}
+        src/load_plugin.cpp)
+add_library(daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+
+target_include_directories(${PROJECT_NAME} PRIVATE include/)
+target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries)
+
+target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_include_directories(${PROJECT_NAME}
+        INTERFACE
+        "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>"
+        )
+
+install(TARGETS ${PROJECT_NAME}
+        EXPORT ${PROJECT_NAME}_Targets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        )
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+        "${PROJECT_SOURCE_DIR}/cmake/${PROJECT_NAME}Config.cmake.in"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        INSTALL_DESTINATION lib/cmake/${PROJECT_NAME}
 )
 
-set( SOURCE_FILES
-	load_library.cpp
-	load_library_posix.cpp
-	load_library_test.cpp
-	load_library_windows.cpp
-	load_plugin.cpp
-)
+write_basic_package_version_file("${PROJECT_NAME}ConfigVersion.cmake"
+        VERSION ${PROJECT_VERSION}
+        COMPATIBILITY SameMajorVersion)
 
-include_directories( SYSTEM ${Boost_INCLUDE_DIRS} )
-link_directories( ${Boost_LIBRARY_DIRS} )
+install(EXPORT ${PROJECT_NAME}_Targets
+        FILE ${PROJECT_NAME}Targets.cmake
+        NAMESPACE daw::
+        DESTINATION lib/cmake/${PROJECT_NAME}
+        )
 
-add_library ( load_library STATIC ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( load_library header_libraries_prj )
-target_link_libraries( load_library ${Boost_LIBRARIES} )
+install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake"
+        "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake "
+        DESTINATION lib/cmake/${PROJECT_NAME}
+        )
 
-install( TARGETS load_library DESTINATION lib )
-install( DIRECTORY ${HEADER_FOLDER}/ DESTINATION include/daw/parse_template )
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/ DESTINATION include/)
 
-add_executable( example_load_library example_load_library.cpp )
-add_test( example_load_library_test, example_load_library )
-add_dependencies( example_load_library header_libraries_prj )
-target_link_libraries( example_load_library load_library ${CMAKE_DL_LIBS} ${Boost_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${COMPILER_SPECIFIC_LIBS} )
+if (DAW_ENABLE_TESTING)
+    enable_testing()
+    add_subdirectory(tests)
+endif ()
+
