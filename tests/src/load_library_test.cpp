@@ -39,7 +39,7 @@ std::optional<string_t> find_library_file( string_t const &base_name,
 	using namespace std::string_view_literals;
 
 #ifndef _WIN32
-	string_t const lib_name = "lib" + base_name
+	string_t const lib_name = "lib" + base_name;
 #else
 	string_t const lib_name = L"lib" + base_name;
 #endif
