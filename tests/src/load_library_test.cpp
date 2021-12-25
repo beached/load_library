@@ -22,6 +22,7 @@
 
 #include <daw/system/load_library.h>
 
+#include <cassert>
 #include <filesystem>
 #include <iostream>
 #include <optional>
@@ -64,5 +65,6 @@ int main( ) {
 	}
 	auto result =
 	  daw::system::call_library_function<int>( *lib_name, "add", 5, 6 );
+	assert( result == 11 );
 	std::cout << result << '\n';
 }
