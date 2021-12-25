@@ -27,47 +27,42 @@
 #include <optional>
 #include <string_view>
 
-#ifndef _WIN32
-std::optional<std::filesystem::path>
-find_library_file( std::string const &base_name,
-              std::string const &root_path = "." ) {
+using string_t = typename std::filesystem::path::string_type;
+#ifdef _WIN32
+#define STRPREF L
+#else
+#define STRPREF
+#endif
+std::optional<string_t> find_library_file( string_t const &base_name,
+                                           string_t const &root_path = "." ) {
 	using namespace std::string_view_literals;
-	std::string const lib_name = "lib" + base_name;
+	string_t const lib_name = STRPREF "lib" + base_name;
+
+#ifndef _WIN32
 	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
+#else
+	static constexpr auto extensions = std::array{ std::wstring_view( L".dll" ) };
+#endif
 	for( std::filesystem::path const &file :
 	     std::filesystem::directory_iterator( root_path ) ) {
 		if( std::find( std::begin( extensions ),
 		               std::end( extensions ),
 		               file.extension( ) ) != std::end( extensions ) ) {
 			if( base_name == file.stem( ) or lib_name == file.stem( ) ) {
-				return file;
+				return file.native( );
 			}
 		}
 	}
 	return { };
 }
-#endif
 
 int main( ) {
-
-#ifdef _WIN32
-	char *strA = "this is a test";
-	char *strB = "is";
-
-	auto result = daw::system::call_dll_function<int>( "User32.dll",
-	                                                   "MessageBoxA",
-	                                                   (HWND)NULL,
-	                                                   (LPCSTR)strA,
-	                                                   (LPCSTR)strB,
-	                                                   (UINT)0 );
-#else
-	auto lib_name = find_library_file( "test_library" );
+	auto lib_name = find_library_file( STRPREF "test_library" );
 	if( not lib_name ) {
 		std::cerr << "could not find library\n";
 		return 1;
 	}
 	auto result =
 	  daw::system::call_library_function<int>( *lib_name, "add", 5, 6 );
-#endif
 	std::cout << result << '\n';
 }

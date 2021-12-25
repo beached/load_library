@@ -33,43 +33,50 @@
 #include "load_library_posix.h"
 #endif
 
-#include "ref_counted_value.h"
-
 namespace daw::system {
 	namespace impl {
+		using load_library_result_t =
+		  daw::remove_cvref_t<decltype( load_library( "" ) )>;
+		struct HandleDeleter {
+			constexpr void operator( )( load_library_result_t ptr ) const {
+				if( ptr ) {
+					close_library( ptr );
+				}
+			}
+		};
+
 		class OSLibraryHandle {
-			using handle_t = decltype( load_library( "" ) );
-			daw::ReferenceCountedValue<handle_t> m_handle;
+			std::shared_ptr<std::remove_pointer_t<load_library_result_t>> m_handle =
+			  { };
 
 		public:
 			explicit OSLibraryHandle( std::string const &library_path );
 #ifdef _WIN32
 			explicit OSLibraryHandle( std::wstring const &library_path );
 #endif
-			[[nodiscard]] handle_t &get( );
-			[[nodiscard]] handle_t const &get( ) const;
+			[[nodiscard]] load_library_result_t get( ) const;
 
+			[[nodiscard]] explicit operator bool( ) const {
+				return static_cast<bool>( m_handle );
+			}
 		}; // class OSLibraryHandle
 	}    // namespace impl
 
 	class LibraryHandle {
-		// impl::OSLibraryHandle m_handle;
-		using handle_t = decltype( impl::load_library( "" ) );
-		daw::ReferenceCountedValue<handle_t> m_handle;
+		using handle_t = std::remove_pointer_t<
+		  daw::remove_cvref_t<decltype( impl::load_library( "" ) )>>;
+		std::shared_ptr<handle_t> m_handle = { };
 
 	public:
 		template<typename StringType>
 		explicit LibraryHandle( StringType const &library_path )
-		  : m_handle{ impl::load_library( library_path ) } {
-			m_handle.set_cleaner(
-			  []( handle_t &handle ) { impl::close_library( handle ); } );
-		}
+		  : m_handle{ impl::load_library( library_path ), impl::HandleDeleter{} } {}
 
 		template<typename ResultType, typename... Args>
 		ResultType call_function( std::string const &function_name,
 		                          Args &&...function_args ) const {
 			auto function_ptr =
-			  impl::get_function_address<ResultType, Args...>( m_handle( ),
+			  impl::get_function_address<ResultType, Args...>( m_handle.get( ),
 			                                                   function_name );
 			return ( *function_ptr )( std::forward<Args>( function_args )... );
 		}
@@ -78,7 +85,7 @@ namespace daw::system {
 		auto get_function( std::string const &function_name )
 		  -> daw::function_pointer_t<ResultType, Args...> {
 			auto function_ptr =
-			  impl::get_function_address<ResultType, Args...>( m_handle( ),
+			  impl::get_function_address<ResultType, Args...>( m_handle.get( ),
 			                                                   function_name );
 			return function_ptr;
 		}
@@ -86,8 +93,8 @@ namespace daw::system {
 
 	template<typename ResultType, typename... Args>
 	ResultType call_library_function( std::string const &dll_name,
-	                              std::string const &function_name,
-	                              Args &&...function_args ) {
+	                                  std::string const &function_name,
+	                                  Args &&...function_args ) {
 		auto lib = LibraryHandle( dll_name );
 		return lib.call_function<ResultType, Args...>(
 		  function_name,

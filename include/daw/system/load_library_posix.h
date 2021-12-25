@@ -39,8 +39,8 @@ namespace daw::system::impl {
 		(void)dlerror( );
 		auto function_ptr = reinterpret_cast<function_ptr_t>(
 		  dlsym( handle, function_name.c_str( ) ) );
-		if( char const *err = dlerror( ); not function_ptr or err ) {
-			throw std::runtime_error( err );
+		if( not function_ptr ) {
+			throw std::runtime_error( dlerror( ) );
 		}
 		return function_ptr;
 	}

@@ -31,8 +31,8 @@ namespace daw::system::impl {
 	void *load_library( std::string const &library_path ) {
 		(void)dlerror( );
 		auto hnd = dlopen( library_path.c_str( ), RTLD_LAZY );
-		if( char const *err = dlerror( ); not hnd or err ) {
-			throw std::runtime_error( err );
+		if( not hnd ) {
+			throw std::runtime_error( dlerror( ) );
 		}
 		return hnd;
 	}
