@@ -101,8 +101,9 @@ namespace daw::system {
 		  DAW_FWD2( Args, function_args )... );
 	}
 
+#ifdef _WIN32
 	template<typename ResultType, typename... Args>
-	ResultType call_dll_function( std::wstring const &dll_name,
+	ResultType call_library_function( std::wstring const &dll_name,
 	                              std::string const &function_name,
 	                              Args &&...function_args ) {
 		auto lib = LibraryHandle( dll_name );
@@ -110,4 +111,5 @@ namespace daw::system {
 		  function_name,
 		  DAW_FWD2( Args, function_args )... );
 	}
+#endif
 } // namespace daw::system

@@ -30,14 +30,19 @@
 
 using string_t = typename std::filesystem::path::string_type;
 #ifdef _WIN32
-#define STRPREF L
+#define DEFAULT_ROOT L"."
 #else
-#define STRPREF
+#define DEFAULT_ROOT "."
 #endif
 std::optional<string_t> find_library_file( string_t const &base_name,
-                                           string_t const &root_path = "." ) {
+                                           string_t const &root_path = DEFAULT_ROOT ) {
 	using namespace std::string_view_literals;
-	string_t const lib_name = STRPREF "lib" + base_name;
+
+#ifndef _WIN32
+	string_t const lib_name = "lib" + base_name
+#else
+	string_t const lib_name = L"lib" + base_name;
+#endif
 
 #ifndef _WIN32
 	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
@@ -58,7 +63,11 @@ std::optional<string_t> find_library_file( string_t const &base_name,
 }
 
 int main( ) {
-	auto lib_name = find_library_file( STRPREF "test_library" );
+#ifndef _WIN32
+	auto lib_name = find_library_file( "test_library" );
+#else
+	auto lib_name = find_library_file( L"test_library" );
+#endif
 	if( not lib_name ) {
 		std::cerr << "could not find library\n";
 		return 1;

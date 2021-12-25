@@ -71,7 +71,7 @@ namespace daw::system::impl {
 		return std::make_pair( err_no, GetLastErrorAsString( err_no ) );
 	}
 
-	HINSTANCE load_library( std::wstring library_path ) {
+	HINSTANCE load_library( std::wstring const & library_path ) {
 		auto result =
 		  static_cast<HINSTANCE>( LoadLibraryW( library_path.c_str( ) ) );
 		if( !result ) {
@@ -84,8 +84,8 @@ namespace daw::system::impl {
 		return result;
 	}
 
-	HINSTANCE load_library( std::string library_path ) {
-		return load_library( widen_string( DAW_MOVE( library_path ) ) );
+	HINSTANCE load_library( std::string const & library_path ) {
+		return load_library( widen_string( library_path ) );
 	}
 
 	void close_library( HINSTANCE handle ) {
