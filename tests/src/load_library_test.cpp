@@ -34,7 +34,7 @@ std::optional<string_t>
 find_library_file( string_t const &base_name,
                    std::filesystem::path const &root_path ) {
 	using namespace std::string_view_literals;
-
+	std::cerr << "Searching for library in " << root_path << '\n';
 #ifndef _WIN32
 	string_t const lib_name = "lib" + base_name;
 	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
@@ -58,23 +58,12 @@ find_library_file( string_t const &base_name,
 }
 
 int main( ) {
-
-	char const *DAW_BUILD_DIR = getenv( "DAW_BUILD_DIR" );
-	if( not DAW_BUILD_DIR ) {
-		std::cerr << "DAW_BUILD_DIR not in environment\n";
-	} else {
-		std::cerr << "DAW_BUILD_DIR set to " << DAW_BUILD_DIR << '\n';
-	}
 #ifdef _WIN32
 	auto lib_name =
-	  find_library_file( L"test_library",
-	                     DAW_BUILD_DIR ? std::filesystem::path( DAW_BUILD_DIR )
-	                                   : std::filesystem::current_path( ) );
+	  find_library_file( L"test_library", std::filesystem::current_path( ) );
 #else
 	auto lib_name =
-	  find_library_file( "test_library",
-	                     DAW_BUILD_DIR ? std::filesystem::path( DAW_BUILD_DIR )
-	                                   : std::filesystem::current_path( ) );
+	  find_library_file( "test_library", std::filesystem::current_path( ) );
 #endif
 	if( not lib_name ) {
 		std::cerr << "could not find library\n";
