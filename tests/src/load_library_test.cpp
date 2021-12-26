@@ -58,7 +58,8 @@ std::optional<string_t> find_library_file( string_t const &base_name,
 
 int main( ) {
 	auto lib_name =
-	  find_library_file( "test_library", std::filesystem::current_path( ) );
+	  find_library_file( "test_library",
+	                     std::filesystem::current_path( ).string( ) );
 	if( not lib_name ) {
 		std::cerr << "could not find library\n";
 		return 1;
