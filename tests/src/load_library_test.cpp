@@ -56,16 +56,14 @@ std::optional<string_t> find_library_file( string_t const &base_name,
 	return { };
 }
 
-int main( int argc, char **argv ) {
-	assert( argc >= 1 );
+int main( ) {
 #ifndef _WIN32
-	auto lib_name = find_library_file( "test_library", argv[1] );
+	auto lib_name = find_library_file( "test_library", "." );
 #else
 	auto lib_name =
-	  find_library_file( L"test_library", daw::system::widen_string( argv[1] ) );
+	  find_library_file( L"test_library", L"." );
 #endif
 	if( not lib_name ) {
-		std::cerr << "Using Working Dir of " << argv[1] << '\n';
 		std::cerr << "could not find library\n";
 		return 1;
 	}
