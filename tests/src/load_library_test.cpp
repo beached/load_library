@@ -36,15 +36,12 @@ std::optional<string_t> find_library_file( string_t const &base_name,
 
 #ifndef _WIN32
 	string_t const lib_name = "lib" + base_name;
-#else
-	string_t const lib_name = L"lib" + base_name;
-#endif
-
-#ifndef _WIN32
 	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
 #else
+	string_t const lib_name = L"lib" + base_name;
 	static constexpr auto extensions = std::array{ std::wstring_view( L".dll" ) };
 #endif
+
 	for( std::filesystem::path const &file :
 	     std::filesystem::directory_iterator( root_path ) ) {
 		if( std::find( std::begin( extensions ),
