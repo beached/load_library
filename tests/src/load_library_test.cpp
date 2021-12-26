@@ -29,14 +29,9 @@
 #include <string_view>
 
 using string_t = typename std::filesystem::path::string_type;
-#ifdef _WIN32
-#define DEFAULT_ROOT L"."
-#else
-#define DEFAULT_ROOT "."
-#endif
-std::optional<string_t>
-find_library_file( string_t const &base_name,
-                   string_t const &root_path = DEFAULT_ROOT ) {
+
+std::optional<string_t> find_library_file( string_t const &base_name,
+                                           string_t const &root_path ) {
 	using namespace std::string_view_literals;
 
 #ifndef _WIN32
@@ -63,11 +58,13 @@ find_library_file( string_t const &base_name,
 	return { };
 }
 
-int main( int, char **argv ) {
+int main( int argc, char **argv ) {
+	assert( argc >= 1 );
 #ifndef _WIN32
-	auto lib_name = find_library_file( "test_library" );
+	auto lib_name = find_library_file( "test_library", argv[1] );
 #else
-	auto lib_name = find_library_file( L"test_library" );
+	auto lib_name =
+	  find_library_file( L"test_library", daw::system::widen_string( argv[1] ) );
 #endif
 	if( not lib_name ) {
 		std::cerr << "Using Working Dir of " << argv[1] << '\n';

@@ -39,7 +39,7 @@
 #include <iterator>
 #include <windows.h>
 
-namespace daw::system::impl {
+namespace daw::system {
 	std::wstring widen_string( std::string const &in_str ) {
 		std::wstring result{ };
 		daw::utf8::unchecked::utf8to16( std::data( in_str ),
@@ -47,7 +47,9 @@ namespace daw::system::impl {
 		                                std::back_inserter( result ) );
 		return result;
 	}
+} // namespace daw::system
 
+namespace daw::system::impl {
 	std::string GetLastErrorAsString( DWORD errorMessageID ) {
 		// Get the error message, if any.
 		if( errorMessageID == 0 ) {

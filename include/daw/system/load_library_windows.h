@@ -29,6 +29,10 @@
 
 #include <daw/daw_utility.h>
 
+namespace daw::system {
+	std::wstring widen_string( std::string const &in_str );
+}
+
 namespace daw::system::impl {
 	inline std::string GetLastErrorStdStr( ) {
 		DWORD error = GetLastError( );
