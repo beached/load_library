@@ -45,7 +45,7 @@ find_library_file( string_t const &base_name,
 
 	for( std::filesystem::path const &file :
 	     std::filesystem::directory_iterator( root_path ) ) {
-		std::cout << "Checking: " << file << '\n';
+		std::cerr << "Checking: " << file << '\n';
 		if( std::find( std::begin( extensions ),
 		               std::end( extensions ),
 		               file.extension( ) ) != std::end( extensions ) ) {
@@ -58,7 +58,13 @@ find_library_file( string_t const &base_name,
 }
 
 int main( ) {
+
 	char const *DAW_BUILD_DIR = getenv( "DAW_BUILD_DIR" );
+	if( not DAW_BUILD_DIR ) {
+		std::cerr << "DAW_BUILD_DIR not in environment\n";
+	} else {
+		std::cerr << "DAW_BUILD_DIR set to " << DAW_BUILD_DIR << '\n';
+	}
 #ifdef _WIN32
 	auto lib_name =
 	  find_library_file( L"test_library",
