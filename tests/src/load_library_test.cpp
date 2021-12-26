@@ -63,7 +63,7 @@ find_library_file( string_t const &base_name,
 	return { };
 }
 
-int main( ) {
+int main( int, char **argv ) {
 #ifndef _WIN32
 	auto lib_name = find_library_file( "test_library" );
 #else
