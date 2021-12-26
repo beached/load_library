@@ -17,7 +17,7 @@ add_library( test_library SHARED src/libtest.cpp )
 
 add_executable(load_library_test_bin src/load_library_test.cpp)
 target_link_libraries(load_library_test_bin load-library-test-deps)
-add_test(NAME load_library_test COMMAND load_library_test_bin WORKING_DIRECTORY "${CMAKE_BINARY_DIR}/tests")
+add_test(NAME load_library_test COMMAND load_library_test_bin WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 add_dependencies(${PROJECT_NAME}_full load_library_test_bin)
 add_dependencies( load_library_test_bin test_library )
 
