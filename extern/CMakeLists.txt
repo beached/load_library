@@ -20,5 +20,11 @@ FetchContent_Declare(
         GIT_TAG master
 )
 
-FetchContent_MakeAvailable(daw_header_libraries)
+FetchContent_Declare(
+        daw_utf_range
+        GIT_REPOSITORY https://github.com/beached/utf_range.git
+        GIT_TAG master
+)
+
+FetchContent_MakeAvailable(daw_header_libraries daw_utf_range )
 

@@ -31,7 +31,7 @@ include(GNUInstallDirs)
 if (WIN32)
     set(DAW_LIBRARY_DEFINITION_FILE src/load_library_windows.cpp)
 else ()
-    set(DAW_LIBRARY_DEFINITION_FILE src/load_library_posix.cpp)
+    set(DAW_LIBRARY_DEFINITION_FILE src/load_library_posix.cpp src/load_library_windows.cpp)
 endif ()
 
 add_library(${PROJECT_NAME}
@@ -41,11 +41,13 @@ add_library(${PROJECT_NAME}
 add_library(daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 if (NOT WIN32)
-    set(DAW_DL_LIB dl)
+    set(DAW_EXTRA_LIBS dl daw::daw-utf-range)
+else ()
+    set(DAW_EXTRA_LIBS daw::daw-utf-range)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE include/)
-target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries ${DAW_DL_LIB})
+target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries ${DAW_EXTRA_LIBS})
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_include_directories(${PROJECT_NAME}
