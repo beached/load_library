@@ -58,8 +58,13 @@ find_library_file( string_t const &base_name,
 }
 
 int main( ) {
+#ifdef _WIN32
+	auto lib_name =
+	  find_library_file( L"test_library", std::filesystem::current_path( ) );
+#else
 	auto lib_name =
 	  find_library_file( "test_library", std::filesystem::current_path( ) );
+#endif
 	if( not lib_name ) {
 		std::cerr << "could not find library\n";
 		return 1;
