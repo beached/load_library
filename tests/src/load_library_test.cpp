@@ -44,8 +44,7 @@ find_library_file( string_t const &base_name,
 #endif
 
 	for( std::filesystem::path const &file :
-	     std::filesystem::directory_iterator( root_path ) ) {
-		std::cerr << "Checking: " << file << '\n';
+	     std::filesystem::recursive_directory_iterator( root_path ) ) {
 		if( std::find( std::begin( extensions ),
 		               std::end( extensions ),
 		               file.extension( ) ) != std::end( extensions ) ) {
