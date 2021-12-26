@@ -30,8 +30,9 @@
 
 using string_t = typename std::filesystem::path::string_type;
 
-std::optional<string_t> find_library_file( string_t const &base_name,
-                                           string_t const &root_path ) {
+std::optional<string_t>
+find_library_file( string_t const &base_name,
+                   std::filesystem::path const &root_path ) {
 	using namespace std::string_view_literals;
 
 #ifndef _WIN32
@@ -58,8 +59,7 @@ std::optional<string_t> find_library_file( string_t const &base_name,
 
 int main( ) {
 	auto lib_name =
-	  find_library_file( "test_library",
-	                     std::filesystem::current_path( ).string( ) );
+	  find_library_file( "test_library", std::filesystem::current_path( ) );
 	if( not lib_name ) {
 		std::cerr << "could not find library\n";
 		return 1;
