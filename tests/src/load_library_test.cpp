@@ -34,8 +34,9 @@ using string_t = typename std::filesystem::path::string_type;
 #else
 #define DEFAULT_ROOT "."
 #endif
-std::optional<string_t> find_library_file( string_t const &base_name,
-                                           string_t const &root_path = DEFAULT_ROOT ) {
+std::optional<string_t>
+find_library_file( string_t const &base_name,
+                   string_t const &root_path = DEFAULT_ROOT ) {
 	using namespace std::string_view_literals;
 
 #ifndef _WIN32
@@ -69,6 +70,7 @@ int main( ) {
 	auto lib_name = find_library_file( L"test_library" );
 #endif
 	if( not lib_name ) {
+		std::cerr << "Using Working Dir of " << argv[1] << '\n';
 		std::cerr << "could not find library\n";
 		return 1;
 	}

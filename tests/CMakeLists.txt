@@ -13,12 +13,12 @@ target_compile_features(load-library-test-deps INTERFACE cxx_std_17)
 
 add_custom_target(${PROJECT_NAME}_full)
 
-add_library( test_library SHARED src/libtest.cpp )
+add_library(test_library SHARED src/libtest.cpp)
 
 add_executable(load_library_test_bin src/load_library_test.cpp)
 target_link_libraries(load_library_test_bin load-library-test-deps)
-add_test(NAME load_library_test COMMAND load_library_test_bin WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
+add_test(NAME load_library_test COMMAND load_library_test_bin "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}" WORKING_DIRECTORY "${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 add_dependencies(${PROJECT_NAME}_full load_library_test_bin)
-add_dependencies( load_library_test_bin test_library )
+add_dependencies(load_library_test_bin test_library)
 
 
