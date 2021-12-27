@@ -52,6 +52,7 @@ jobs:
     name: "${{ matrix.config.os }} ${{ matrix.config.toolset }} ${{ matrix.config.cpp_version }} ${{ matrix.config.arch }} ${{ matrix.config.build_type }}"
     env:
       DAW_BUILD_DIR: "build_${{ matrix.config.cpp_version }}_${{ matrix.config.arch }}_${{ matrix.config.build_type }}_${{ matrix.config.toolset }}"
+      VCPKG_INSTALLATION_ROOT: "c:/vcpkg"
     steps:
       - uses: actions/checkout@v1
       - uses: beached/msvc-dev-cmd@285e7c0b9b57a02c900951da93a77e656425d783
@@ -60,7 +61,7 @@ jobs:
       - name: Setup Build Environment
         run: md ${{ env.DAW_BUILD_DIR }}
       - name: CMake Config
-        run: cmake.exe ${{ matrix.config.cmake_flags }} -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_CXX_STANDARD=${{ matrix.config.cpp_version }} -DDAW_NUM_RUNS=1 -DDAW_ENABLE_TESTING=On -DDAW_WERROR=ON -B${{ env.DAW_BUILD_DIR }}/ .
+        run: cmake.exe ${{ matrix.config.cmake_flags }} -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DCMAKE_CXX_STANDARD=${{ matrix.config.cpp_version }} -DDAW_NUM_RUNS=1 -DDAW_ENABLE_TESTING=On -DDAW_WERROR=ON -DCMAKE_TOOLCHAIN_FILE="${{env.VCPKG_INSTALLATION_ROOT}}/scripts/buildsystems/vcpkg.cmake" -B${{ env.DAW_BUILD_DIR }}/ .
       - name: Build
         run: cmake.exe --build ${{ env.DAW_BUILD_DIR }}/ --target daw-load-library_full --config ${{ matrix.config.build_type }}
       - name: Test

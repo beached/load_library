@@ -26,6 +26,8 @@ else ()
     find_package(daw-header-libraries REQUIRED)
 endif ()
 
+find_package(fmt CONFIG REQUIRED)
+
 include(GNUInstallDirs)
 
 if (WIN32)
@@ -42,12 +44,10 @@ add_library(daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 if (NOT WIN32)
     set(DAW_EXTRA_LIBS dl)
-else ()
-    set(DAW_EXTRA_LIBS daw::daw-utf-range)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE include/)
-target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries ${DAW_EXTRA_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries fmt::fmt ${DAW_EXTRA_LIBS})
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_include_directories(${PROJECT_NAME}

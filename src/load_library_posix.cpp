@@ -22,13 +22,14 @@
 
 #ifndef _WIN32
 
+#include "daw/system/impl/load_library_posix.h"
+
 #include <dlfcn.h>
+#include <filesystem>
 #include <string>
 
-#include "daw/system/load_library_posix.h"
-
 namespace daw::system::impl {
-	void *load_library( std::string const &library_path ) {
+	void *load_library( std::filesystem::path const &library_path ) {
 		(void)dlerror( );
 		auto hnd = dlopen( library_path.c_str( ), RTLD_LAZY );
 		if( not hnd ) {

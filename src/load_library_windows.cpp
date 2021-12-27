@@ -22,34 +22,22 @@
 
 #ifdef _WIN32
 
-#include <codecvt>
-#include <cstdint>
-#include <locale>
-#include <sstream>
-#include <string>
-#include <type_traits>
-#include <utility>
-
-#include "daw/system/load_library_windows.h"
+#include "daw/system/impl/load_library_windows.h"
 
 #include <daw/daw_move.h>
 #include <daw/daw_utility.h>
-#include <daw/utf8/unchecked.h>
 
+#include <cstdint>
+#include <filesystem>
+#include <fmt/format.h>
 #include <iterator>
+#include <string>
+#include <type_traits>
+#include <utility>
 #include <windows.h>
 
-namespace daw::system {
-	std::wstring widen_string( std::string const &in_str ) {
-		std::wstring result{ };
-		daw::utf8::unchecked::utf8to16( std::data( in_str ),
-		                                daw::data_end( in_str ),
-		                                std::back_inserter( result ) );
-		return result;
-	}
-} // namespace daw::system
-
 namespace daw::system::impl {
+
 	std::string GetLastErrorAsString( DWORD errorMessageID ) {
 		// Get the error message, if any.
 		if( errorMessageID == 0 ) {
@@ -75,30 +63,31 @@ namespace daw::system::impl {
 		return message;
 	}
 
+	std::string GetLastErrorStdStr( ) {
+		return GetLastErrorAsString( GetLastError( ) );
+	}
+
 	std::pair<DWORD, std::string> GetLastErrorAsString( ) {
 		unsigned long err_no = ::GetLastError( );
 		return std::make_pair( err_no, GetLastErrorAsString( err_no ) );
 	}
 
-	HINSTANCE load_library( std::wstring const &library_path ) {
+	HINSTANCE load_library( std::filesystem::path const &library_path ) {
 		auto result =
 		  static_cast<HINSTANCE>( LoadLibraryW( library_path.c_str( ) ) );
 		if( !result ) {
-			std::stringstream msg;
-			auto error_info = GetLastErrorAsString( );
-			msg << "Could not open library: error no: " << error_info.first
-			    << " with message: " << error_info.second;
-			throw std::runtime_error( msg.str( ) );
+			auto const error_info = GetLastErrorAsString( );
+			auto const message =
+			  fmt::format( "Could not open library: error no: {} with message: {}",
+			               error_info.first,
+			               error_info.second );
+			throw std::runtime_error( message );
 		}
 		return result;
 	}
 
-	HINSTANCE load_library( std::string const &library_path ) {
-		return load_library( widen_string( library_path ) );
-	}
-
 	void close_library( HINSTANCE handle ) {
-		if( nullptr != handle ) {
+		if( handle ) {
 			FreeLibrary( handle );
 		}
 	}

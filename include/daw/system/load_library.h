@@ -28,49 +28,31 @@
 #include <daw/daw_utility.h>
 
 #ifdef _WIN32
-#include "load_library_windows.h"
+#include "impl/load_library_windows.h"
 #else
-#include "load_library_posix.h"
+#include "impl/load_library_posix.h"
 #endif
 
 namespace daw::system {
 	namespace impl {
 		using load_library_result_t =
 		  daw::remove_cvref_t<decltype( load_library( "" ) )>;
-		struct HandleDeleter {
+		struct library_handle_deleter {
 			constexpr void operator( )( load_library_result_t ptr ) const {
 				if( ptr ) {
 					close_library( ptr );
 				}
 			}
 		};
+	} // namespace impl
 
-		class OSLibraryHandle {
-			std::shared_ptr<std::remove_pointer_t<load_library_result_t>> m_handle =
-			  { };
-
-		public:
-			explicit OSLibraryHandle( std::string const &library_path );
-#ifdef _WIN32
-			explicit OSLibraryHandle( std::wstring const &library_path );
-#endif
-			[[nodiscard]] load_library_result_t get( ) const;
-
-			[[nodiscard]] explicit operator bool( ) const {
-				return static_cast<bool>( m_handle );
-			}
-		}; // class OSLibraryHandle
-	}    // namespace impl
-
-	class LibraryHandle {
+	class library_handle {
 		using handle_t = std::remove_pointer_t<
 		  daw::remove_cvref_t<decltype( impl::load_library( "" ) )>>;
 		std::shared_ptr<handle_t> m_handle = { };
 
 	public:
-		template<typename StringType>
-		explicit LibraryHandle( StringType const &library_path )
-		  : m_handle{ impl::load_library( library_path ), impl::HandleDeleter{} } {}
+		explicit library_handle( std::filesystem::path const &library_path );
 
 		template<typename ResultType, typename... Args>
 		ResultType call_function( std::string const &function_name,
@@ -78,7 +60,7 @@ namespace daw::system {
 			auto function_ptr =
 			  impl::get_function_address<ResultType, Args...>( m_handle.get( ),
 			                                                   function_name );
-			return ( *function_ptr )( std::forward<Args>( function_args )... );
+			return ( *function_ptr )( DAW_FWD2( Args, function_args )... );
 		}
 
 		template<typename ResultType, typename... Args>
@@ -89,27 +71,15 @@ namespace daw::system {
 			                                                   function_name );
 			return function_ptr;
 		}
-	}; // class LibraryHandle
+	}; // class library_handle
 
 	template<typename ResultType, typename... Args>
-	ResultType call_library_function( std::string const &dll_name,
+	ResultType call_library_function( std::filesystem::path const &library_path,
 	                                  std::string const &function_name,
 	                                  Args &&...function_args ) {
-		auto lib = LibraryHandle( dll_name );
+		auto lib = library_handle( library_path );
 		return lib.call_function<ResultType, Args...>(
 		  function_name,
 		  DAW_FWD2( Args, function_args )... );
 	}
-
-#ifdef _WIN32
-	template<typename ResultType, typename... Args>
-	ResultType call_library_function( std::wstring const &dll_name,
-	                              std::string const &function_name,
-	                              Args &&...function_args ) {
-		auto lib = LibraryHandle( dll_name );
-		return lib.call_function<ResultType, Args...>(
-		  function_name,
-		  DAW_FWD2( Args, function_args )... );
-	}
-#endif
 } // namespace daw::system

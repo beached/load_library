@@ -22,25 +22,29 @@
 
 #pragma once
 
-#include <dlfcn.h>
+#include <filesystem>
 #include <string>
+#include <windows.h>
 
 #include <daw/daw_utility.h>
 
 namespace daw::system::impl {
-	void *load_library( std::string const &library_path );
+	HINSTANCE load_library( std::filesystem::path const &library_path );
+	void close_library( HINSTANCE handle );
 
-	void close_library( void *handle );
+	std::string GetLastErrorStdStr( );
 
 	template<typename ResultType, typename... ArgTypes>
 	daw::function_pointer_t<ResultType, ArgTypes...>
-	get_function_address( void *handle, std::string const &function_name ) {
+	get_function_address( HINSTANCE const &handle,
+	                      std::string const &function_name ) {
 		using function_ptr_t = daw::function_pointer_t<ResultType, ArgTypes...>;
-		(void)dlerror( );
 		auto function_ptr = reinterpret_cast<function_ptr_t>(
-		  dlsym( handle, function_name.c_str( ) ) );
+		  GetProcAddress( handle, function_name.c_str( ) ) );
 		if( not function_ptr ) {
-			throw std::runtime_error( dlerror( ) );
+			std::string const msg =
+			  "Could not load function in library err : " + GetLastErrorStdStr( );
+			throw std::runtime_error( msg );
 		}
 		return function_ptr;
 	}

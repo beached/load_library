@@ -29,39 +29,38 @@
 #include <daw/daw_string_view.h>
 
 #include <filesystem>
-#include <iostream>
+#include <fmt/format.h>
 #include <memory>
-#include <sstream>
 #include <string>
 #include <vector>
 
-namespace daw::nodepp::base {
-	using plugin_t = std::pair<daw::system::LibraryHandle,
-	                           std::unique_ptr<daw::nodepp::plugins::IPlugin>>;
+namespace daw::system::plugins {
+	using plugin_t = std::pair<daw::system::library_handle,
+	                           std::unique_ptr<daw::system::plugins::IPlugin>>;
 
 	std::vector<std::filesystem::path>
-	get_files_in_folder( daw::string_view folder,
+	get_files_in_folder( std::filesystem::path const &folder,
 	                     std::vector<std::string> const &extensions ) {
 		namespace fs = std::filesystem;
 		std::vector<std::filesystem::path> result;
-		auto p = fs::path( folder.data( ) );
 
-		if( fs::exists( p ) and fs::is_directory( p ) ) {
-			std::copy_if(
-			  fs::directory_iterator( folder.data( ) ),
-			  fs::directory_iterator( ),
-			  std::back_inserter( result ),
-			  [&extensions]( fs::path const &path ) {
-				  return fs::is_regular_file( path ) and
-				         ( extensions.empty( ) or
-				           daw::algorithm::contains( extensions, path.extension( ) ) );
-			  } );
+		if( not fs::exists( folder ) or not fs::is_directory( folder ) ) {
+			return result;
 		}
+		std::copy_if(
+		  fs::directory_iterator( folder ),
+		  fs::directory_iterator( ),
+		  std::back_inserter( result ),
+		  [&extensions]( fs::path const &path ) {
+			  return fs::is_regular_file( path ) and
+			         ( extensions.empty( ) or
+			           daw::algorithm::contains( extensions, path.extension( ) ) );
+		  } );
 		return ::daw::algorithm::sort( result );
 	}
 
 	std::vector<plugin_t>
-	load_libraries_in_folder( daw::string_view plugin_folder ) {
+	load_libraries_in_folder( std::filesystem::path const &plugin_folder ) {
 		static std::vector<std::string> const extensions = { ".npp" };
 
 		std::vector<plugin_t> results;
@@ -69,22 +68,21 @@ namespace daw::nodepp::base {
 		     get_files_in_folder( plugin_folder, extensions ) ) {
 			auto const &filename = plugin_file.relative_path( ).string( );
 			try {
-				auto handle = ::daw::system::LibraryHandle( filename );
-				auto create_func = handle.get_function<daw::nodepp::plugins::IPlugin *>(
+				auto handle = ::daw::system::library_handle( filename );
+				auto create_func = handle.get_function<daw::system::plugins::IPlugin *>(
 				  "create_plugin" );
 				auto plugin =
-				  std::unique_ptr<daw::nodepp::plugins::IPlugin>( create_func( ) );
+				  std::unique_ptr<daw::system::plugins::IPlugin>( create_func( ) );
 				results.emplace_back( DAW_MOVE( handle ), DAW_MOVE( plugin ) );
 			} catch( std::runtime_error const &ex ) {
 				// We are going to keep on going if we cannot load a plugin
-				std::stringstream ss;
-
-				ss << "Error loading plugin: " << filename << " with error\n"
-				   << ex.what( ) << '\n';
-				std::cerr << ss.str( ) << '\n';
+				fmt::print( stderr,
+				            "Error loading plugin: {} with error:\n {}\n",
+				            filename,
+				            ex.what( ) );
 			}
 		}
 
 		return results;
 	}
-} // namespace daw::nodepp::base
+} // namespace daw::system::plugins
