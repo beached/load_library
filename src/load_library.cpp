@@ -22,39 +22,18 @@
 
 #include "daw/system/load_library.h"
 
-#include <memory>
 #include <string>
 
 namespace daw::system::impl {
 	OSLibraryHandle::OSLibraryHandle( std::string const &library_path )
-	  : m_handle{ impl::load_library( library_path ) } {
-
-		m_handle.set_cleaner( []( handle_t &handle ) { close_library( handle ); } );
-	}
+	  : m_handle{ impl::load_library( library_path ), HandleDeleter{} } {}
 
 #ifdef _WIN32
 	OSLibraryHandle::OSLibraryHandle( std::wstring const &library_path )
-	  : m_handle{ impl::load_library( library_path ) } {
-
-		m_handle.set_cleaner( []( handle_t &handle ) { close_library( handle ); } );
-	}
+	  : m_handle{ impl::load_library( library_path ), HandleDeleter{} } {}
 #endif
 
-	OSLibraryHandle::handle_t &OSLibraryHandle::get( ) {
-		return m_handle( );
-	}
-
-	OSLibraryHandle::handle_t const &OSLibraryHandle::get( ) const {
-		return m_handle( );
+	load_library_result_t OSLibraryHandle::get( ) const {
+		return m_handle.get( );
 	}
 } // namespace daw::system::impl
-
-namespace daw::system {
-	// 		LibraryHandle::LibraryHandle( LibraryHandle other ): m_handle(
-	// std::move( other.m_handle ) ) { }
-	//
-	// 		LibraryHandle LibraryHandle::operator=(LibraryHandle rhs) {
-	// 			m_handle = std::move( rhs.m_handle );
-	// 			return *this;
-	// 		}
-}

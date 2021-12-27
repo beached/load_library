@@ -20,27 +20,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include <windows.h>
+BOOL APIENTRY DllMain( HANDLE, DWORD, LPVOID ) {
+	return TRUE;
+}
 
-#include <dlfcn.h>
-#include <string>
-
-#include "daw/system/load_library_posix.h"
-
-namespace daw::system::impl {
-	void *load_library( std::string const &library_path ) {
-		(void)dlerror( );
-		auto hnd = dlopen( library_path.c_str( ), RTLD_LAZY );
-		if( not hnd ) {
-			throw std::runtime_error( dlerror( ) );
-		}
-		return hnd;
-	}
-
-	void close_library( void *handle ) {
-		if( handle ) {
-			dlclose( handle );
-		}
-	}
-} // namespace daw::system::impl
+#define MAKEDLL extern "C" __declspec( dllexport )
+#else
+#define MAKEDLL extern "C" [[gnu::visibility( "default" )]]
 #endif
+
+MAKEDLL int add( int a, int b ) {
+	return a + b;
+}

@@ -29,7 +29,36 @@
 
 #include <daw/daw_utility.h>
 
+namespace daw::system {
+	std::wstring widen_string( std::string const &in_str );
+}
+
 namespace daw::system::impl {
+	inline std::string GetLastErrorStdStr( ) {
+		DWORD error = GetLastError( );
+		if( error ) {
+			LPVOID lpMsgBuf;
+			DWORD bufLen = FormatMessage( FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			                                FORMAT_MESSAGE_FROM_SYSTEM |
+			                                FORMAT_MESSAGE_IGNORE_INSERTS,
+			                              nullptr,
+			                              error,
+			                              MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
+			                              reinterpret_cast<LPTSTR>( &lpMsgBuf ),
+			                              0,
+			                              NULL );
+			if( bufLen ) {
+				LPCSTR lpMsgStr = reinterpret_cast<LPCSTR>( lpMsgBuf );
+				std::string result( lpMsgStr, lpMsgStr + bufLen );
+
+				LocalFree( lpMsgBuf );
+
+				return result;
+			}
+		}
+		return std::string( );
+	}
+
 	HINSTANCE load_library( std::wstring const &library_path );
 	HINSTANCE load_library( std::string const &library_path );
 	void close_library( HINSTANCE handle );
@@ -41,9 +70,9 @@ namespace daw::system::impl {
 		using function_ptr_t = daw::function_pointer_t<ResultType, ArgTypes...>;
 		auto function_ptr = reinterpret_cast<function_ptr_t>(
 		  GetProcAddress( handle, function_name.c_str( ) ) );
-		if( !function_ptr ) {
-			auto err = GetLastError( );
-			std::string msg = "Could not load function in library err : " + err;
+		if( not function_ptr ) {
+			std::string msg =
+			  "Could not load function in library err : " + GetLastErrorStdStr( );
 			throw std::runtime_error( msg );
 		}
 		return function_ptr;

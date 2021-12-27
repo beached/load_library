@@ -24,6 +24,7 @@
 #include "daw/system/load_library.h"
 #include "daw/system/plugin_base.h"
 
+#include <daw/daw_move.h>
 #include <daw/daw_range_algorithm.h>
 #include <daw/daw_string_view.h>
 
@@ -45,16 +46,15 @@ namespace daw::nodepp::base {
 		std::vector<std::filesystem::path> result;
 		auto p = fs::path( folder.data( ) );
 
-		if( fs::exists( p ) && fs::is_directory( p ) ) {
+		if( fs::exists( p ) and fs::is_directory( p ) ) {
 			std::copy_if(
 			  fs::directory_iterator( folder.data( ) ),
 			  fs::directory_iterator( ),
 			  std::back_inserter( result ),
 			  [&extensions]( fs::path const &path ) {
-				  return fs::is_regular_file( path ) &&
-				         ( extensions.empty( ) ||
-				           ::daw::algorithm::contains( extensions,
-				                                       path.extension( ) ) );
+				  return fs::is_regular_file( path ) and
+				         ( extensions.empty( ) or
+				           daw::algorithm::contains( extensions, path.extension( ) ) );
 			  } );
 		}
 		return ::daw::algorithm::sort( result );
@@ -74,7 +74,7 @@ namespace daw::nodepp::base {
 				  "create_plugin" );
 				auto plugin =
 				  std::unique_ptr<daw::nodepp::plugins::IPlugin>( create_func( ) );
-				results.emplace_back( std::move( handle ), std::move( plugin ) );
+				results.emplace_back( DAW_MOVE( handle ), DAW_MOVE( plugin ) );
 			} catch( std::runtime_error const &ex ) {
 				// We are going to keep on going if we cannot load a plugin
 				std::stringstream ss;

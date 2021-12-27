@@ -20,29 +20,56 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include <iostream>
-
 #include <daw/system/load_library.h>
 
-int main( ) {
+#include <cassert>
+#include <filesystem>
+#include <iostream>
+#include <optional>
+#include <string_view>
 
-#ifdef _WIN32
-	char *strA = "this is a test";
-	char *strB = "is";
+using string_t = typename std::filesystem::path::string_type;
 
-	auto result = daw::system::call_dll_function<int>( "User32.dll",
-	                                                   "MessageBoxA",
-	                                                   (HWND)NULL,
-	                                                   (LPCSTR)strA,
-	                                                   (LPCSTR)strB,
-	                                                   (UINT)0 );
+std::optional<string_t>
+find_library_file( string_t const &base_name,
+                   std::filesystem::path const &root_path ) {
+	using namespace std::string_view_literals;
+	std::cerr << "Searching for library in " << root_path << '\n';
+#ifndef _WIN32
+	string_t const lib_name = "lib" + base_name;
+	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
 #else
-	auto result = daw::system::call_dll_function<std::string>(
-	  "./cygtestlib.dll",
-	  "test",
-	  std::string{ "this is a test" } );
+	string_t const lib_name = L"lib" + base_name;
+	static constexpr auto extensions = std::array{ std::wstring_view( L".dll" ) };
 #endif
 
+	for( std::filesystem::path const &file :
+	     std::filesystem::recursive_directory_iterator( root_path ) ) {
+		if( std::find( std::begin( extensions ),
+		               std::end( extensions ),
+		               file.extension( ) ) != std::end( extensions ) ) {
+			if( base_name == file.stem( ) or lib_name == file.stem( ) ) {
+				return file.native( );
+			}
+		}
+	}
+	return { };
+}
+
+int main( ) {
+#ifdef _WIN32
+	auto lib_name =
+	  find_library_file( L"test_library", std::filesystem::current_path( ) );
+#else
+	auto lib_name =
+	  find_library_file( "test_library", std::filesystem::current_path( ) );
+#endif
+	if( not lib_name ) {
+		std::cerr << "could not find library\n";
+		return 1;
+	}
+	auto result =
+	  daw::system::call_library_function<int>( *lib_name, "add", 5, 6 );
+	assert( result == 11 );
 	std::cout << result << '\n';
-	return 0;
 }
