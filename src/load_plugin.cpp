@@ -36,7 +36,7 @@
 #include <vector>
 
 namespace daw::nodepp::base {
-	using plugin_t = std::pair<daw::system::LibraryHandle,
+	using plugin_t = std::pair<daw::system::library_handle,
 	                           std::unique_ptr<daw::nodepp::plugins::IPlugin>>;
 
 	std::vector<std::filesystem::path>
@@ -69,7 +69,7 @@ namespace daw::nodepp::base {
 		     get_files_in_folder( plugin_folder, extensions ) ) {
 			auto const &filename = plugin_file.relative_path( ).string( );
 			try {
-				auto handle = ::daw::system::LibraryHandle( filename );
+				auto handle = ::daw::system::library_handle( filename );
 				auto create_func = handle.get_function<daw::nodepp::plugins::IPlugin *>(
 				  "create_plugin" );
 				auto plugin =

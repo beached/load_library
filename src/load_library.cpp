@@ -24,16 +24,7 @@
 
 #include <string>
 
-namespace daw::system::impl {
-	OSLibraryHandle::OSLibraryHandle( std::string const &library_path )
-	  : m_handle{ impl::load_library( library_path ), HandleDeleter{} } {}
-
-#ifdef _WIN32
-	OSLibraryHandle::OSLibraryHandle( std::wstring const &library_path )
-	  : m_handle{ impl::load_library( library_path ), HandleDeleter{} } {}
-#endif
-
-	load_library_result_t OSLibraryHandle::get( ) const {
-		return m_handle.get( );
-	}
-} // namespace daw::system::impl
+namespace daw::system {
+	library_handle::library_handle( std::filesystem::path const &library_path )
+	  : m_handle{ impl::load_library( library_path ), impl::library_handle_deleter{} } {}
+} // namespace daw::system

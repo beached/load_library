@@ -32,7 +32,7 @@
 #include <vector>
 
 namespace daw::nodepp::base {
-	using plugin_t = std::pair<daw::system::LibraryHandle,
+	using plugin_t = std::pair<daw::system::library_handle,
 	                           std::unique_ptr<daw::nodepp::plugins::IPlugin>>;
 
 	std::vector<std::filesystem::path>
