@@ -81,7 +81,7 @@ namespace daw::system::impl {
 			  fmt::format( "Could not open library: error no: {} with message: {}",
 			               error_info.first,
 			               error_info.second );
-			throw std::runtime_error( msg );
+			throw std::runtime_error( message );
 		}
 		return result;
 	}
