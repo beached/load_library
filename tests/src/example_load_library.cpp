@@ -30,16 +30,18 @@
 #include <filesystem>
 #include <fmt/format.h>
 #include <memory>
+#include <string>
+#include <vector>
 
 using namespace daw::algorithm;
 
 std::vector<std::filesystem::path>
-get_files_in_folder( std::string folder,
+get_files_in_folder( std::filesystem::path const &folder,
                      std::vector<std::string> const &extensions ) {
 	auto result = std::vector<std::filesystem::path>{ };
-	auto p = std::filesystem::path( folder.c_str( ) );
 
-	if( std::filesystem::exists( p ) and std::filesystem::is_directory( p ) ) {
+	if( std::filesystem::exists( folder ) and
+	    std::filesystem::is_directory( folder ) ) {
 		std::copy_if(
 		  std::filesystem::directory_iterator( folder ),
 		  std::filesystem::directory_iterator( ),
@@ -81,7 +83,8 @@ struct test {
 	}
 };
 
-std::vector<plugin_t> load_libraries_in_folder( std::string plugin_folder ) {
+std::vector<plugin_t>
+load_libraries_in_folder( std::filesystem::path const &plugin_folder ) {
 	static std::vector<std::string> const extensions = { ".npp" };
 
 	std::vector<plugin_t> results;
@@ -108,7 +111,11 @@ std::vector<plugin_t> load_libraries_in_folder( std::string plugin_folder ) {
 }
 
 int main( ) {
+#ifndef _WIN32
 	std::string const plugin_folder = "../..plugins/";
+#else
+	std::wstring const plugin_folder = L"../..plugins/";
+#endif
 	auto libraries = load_libraries_in_folder( plugin_folder );
 	for( auto const &lib : libraries ) {
 		const auto &library = *lib.second;

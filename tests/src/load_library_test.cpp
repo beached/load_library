@@ -34,7 +34,7 @@ std::optional<string_t>
 find_library_file( string_t const &base_name,
                    std::filesystem::path const &root_path ) {
 	using namespace std::string_view_literals;
-	fmt::print( stderr, "Searching for library in {}\n", root_path.c_str( ) );
+	fmt::print( stderr, "Searching for library in {}\n", root_path.string( ) );
 #ifndef _WIN32
 	string_t const lib_name = "lib" + base_name;
 	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
