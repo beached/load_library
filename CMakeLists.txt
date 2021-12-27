@@ -42,8 +42,6 @@ add_library(daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 if (NOT WIN32)
     set(DAW_EXTRA_LIBS dl)
-else ()
-    set(DAW_EXTRA_LIBS daw::daw-utf-range)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE include/)
