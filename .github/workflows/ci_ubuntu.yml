@@ -111,7 +111,7 @@ jobs:
       - name: Build Dependencies
         env:
           CXXFLAGS: ${{ matrix.config.cxx_flags }}
-        run: cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DDAW_NUM_RUNS=1 -DDAW_ENABLE_TESTING=ON -DDAW_WERROR=ON -DDAW_JSON_USE_SANITIZERS=ON -DDAW_NO_FLATTEN=ON -DCMAKE_CXX_STANDARD=${{ matrix.config.cpp_version }} -DCMAKE_TOOLCHAIN_FILE="${{VCPKG_INSTALLATION_ROOT}}/scripts/buildsystems/vcpkg.cmake" -Bbuild/ .
+        run: cmake -GNinja -DCMAKE_BUILD_TYPE=${{ matrix.config.build_type }} -DDAW_NUM_RUNS=1 -DDAW_ENABLE_TESTING=ON -DDAW_WERROR=ON -DDAW_JSON_USE_SANITIZERS=ON -DDAW_NO_FLATTEN=ON -DCMAKE_CXX_STANDARD=${{ matrix.config.cpp_version }} -DCMAKE_TOOLCHAIN_FILE="${{env.VCPKG_INSTALLATION_ROOT}}/scripts/buildsystems/vcpkg.cmake" -Bbuild/ .
       - name: Build
         if: matrix.config.do_fuzz == false
         run: cmake --build build/ --target daw-load-library_full -- -k 0
