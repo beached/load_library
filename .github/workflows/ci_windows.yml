@@ -52,6 +52,7 @@ jobs:
     name: "${{ matrix.config.os }} ${{ matrix.config.toolset }} ${{ matrix.config.cpp_version }} ${{ matrix.config.arch }} ${{ matrix.config.build_type }}"
     env:
       DAW_BUILD_DIR: "build_${{ matrix.config.cpp_version }}_${{ matrix.config.arch }}_${{ matrix.config.build_type }}_${{ matrix.config.toolset }}"
+      VCPKG_INSTALLATION_ROOT: "c:/vcpkg"
     steps:
       - uses: actions/checkout@v1
       - uses: beached/msvc-dev-cmd@285e7c0b9b57a02c900951da93a77e656425d783
