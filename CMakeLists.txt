@@ -38,8 +38,7 @@ endif ()
 
 add_library(${PROJECT_NAME}
         src/load_library.cpp
-        ${DAW_LIBRARY_DEFINITION_FILE}
-        src/load_plugin.cpp)
+        ${DAW_LIBRARY_DEFINITION_FILE})
 add_library(daw::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
 
 if (NOT WIN32)
