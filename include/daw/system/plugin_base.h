@@ -25,10 +25,10 @@
 #include <cinttypes>
 #include <string>
 
-namespace daw::nodepp::plugins {
+namespace daw::system::plugins {
 	struct IPlugin {
 		virtual std::string name( ) const = 0;
 		virtual int64_t version( ) const = 0;
 		virtual ~IPlugin( );
 	}; // struct IPlugin
-} // namespace daw::nodepp::plugins
+} // namespace daw::system::plugins

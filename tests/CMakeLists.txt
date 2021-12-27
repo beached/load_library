@@ -3,10 +3,10 @@ cmake_policy(SET CMP0065 NEW)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-#add_subdirectory(extern)
+find_package(fmt CONFIG REQUIRED)
 
 add_library(load-library-test-deps INTERFACE)
-target_link_libraries(load-library-test-deps INTERFACE daw::daw-header-libraries daw::daw-load-library ${COMPILER_SPECIFIC_LIBS})
+target_link_libraries(load-library-test-deps INTERFACE daw::daw-header-libraries daw::daw-load-library fmt::fmt ${COMPILER_SPECIFIC_LIBS})
 
 target_include_directories(load-library-test-deps INTERFACE include/)
 target_compile_features(load-library-test-deps INTERFACE cxx_std_17)

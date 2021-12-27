@@ -26,6 +26,8 @@ else ()
     find_package(daw-header-libraries REQUIRED)
 endif ()
 
+find_package(fmt CONFIG REQUIRED)
+
 include(GNUInstallDirs)
 
 if (WIN32)
@@ -45,7 +47,7 @@ if (NOT WIN32)
 endif ()
 
 target_include_directories(${PROJECT_NAME} PRIVATE include/)
-target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries ${DAW_EXTRA_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC daw::daw-header-libraries fmt::fmt ${DAW_EXTRA_LIBS})
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_include_directories(${PROJECT_NAME}

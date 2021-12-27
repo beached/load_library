@@ -25,20 +25,18 @@
 #include "daw/system/load_library.h"
 #include "daw/system/plugin_base.h"
 
-#include <daw/daw_string_view.h>
-
 #include <filesystem>
 #include <string>
 #include <vector>
 
-namespace daw::nodepp::base {
-	using plugin_t = std::pair<daw::system::library_handle,
-	                           std::unique_ptr<daw::nodepp::plugins::IPlugin>>;
+namespace daw::system::plugins {
+	using plugin_t =
+	  std::pair<daw::system::library_handle, std::unique_ptr<IPlugin>>;
 
 	std::vector<std::filesystem::path>
-	get_files_in_folder( daw::string_view folder,
+	get_files_in_folder( std::filesystem::path const &folder,
 	                     std::vector<std::string> const &extensions );
 
 	std::vector<plugin_t>
-	load_libraries_in_folder( daw::string_view plugin_folder );
-} // namespace daw::nodepp::base
+	load_libraries_in_folder( std::filesystem::path const &plugin_folder );
+} // namespace daw::system::plugins

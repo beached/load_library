@@ -29,8 +29,8 @@
 
 #include <cstdint>
 #include <filesystem>
+#include <fmt/format.h>
 #include <iterator>
-#include <sstream>
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -76,11 +76,12 @@ namespace daw::system::impl {
 		auto result =
 		  static_cast<HINSTANCE>( LoadLibraryW( library_path.c_str( ) ) );
 		if( !result ) {
-			std::stringstream msg;
-			auto error_info = GetLastErrorAsString( );
-			msg << "Could not open library: error no: " << error_info.first
-			    << " with message: " << error_info.second;
-			throw std::runtime_error( msg.str( ) );
+			auto const error_info = GetLastErrorAsString( );
+			auto const message =
+			  fmt::format( "Could not open library: error no: {} with message: {}",
+			               error_info.first,
+			               error_info.second );
+			throw std::runtime_error( msg );
 		}
 		return result;
 	}

@@ -24,7 +24,7 @@
 
 #include <cassert>
 #include <filesystem>
-#include <iostream>
+#include <fmt/format.h>
 #include <optional>
 #include <string_view>
 
@@ -34,7 +34,7 @@ std::optional<string_t>
 find_library_file( string_t const &base_name,
                    std::filesystem::path const &root_path ) {
 	using namespace std::string_view_literals;
-	std::cerr << "Searching for library in " << root_path << '\n';
+	fmt::print( stderr, "Searching for library in {}\n", root_path.c_str( ) );
 #ifndef _WIN32
 	string_t const lib_name = "lib" + base_name;
 	static constexpr auto extensions = std::array{ ".so"sv, ".dylib"sv };
@@ -65,11 +65,11 @@ int main( ) {
 	  find_library_file( "test_library", std::filesystem::current_path( ) );
 #endif
 	if( not lib_name ) {
-		std::cerr << "could not find library\n";
-		return 1;
+		fmt::print( stderr, "could not load library\n" );
+		return EXIT_FAILURE;
 	}
 	auto result =
 	  daw::system::call_library_function<int>( *lib_name, "add", 5, 6 );
 	assert( result == 11 );
-	std::cout << result << '\n';
+	fmt::print( "result: {}\n", result );
 }
